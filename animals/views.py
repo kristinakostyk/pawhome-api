@@ -1,11 +1,12 @@
 from django.db.models import Q
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Animal, Shelter
 from .serializers import AnimalSerializer, ShelterSerializer
-
+from .permissions import IsAdminForShelterDelete
 
 def api_error(message, status_code, details=None):
     return Response(
@@ -15,6 +16,8 @@ def api_error(message, status_code, details=None):
 
 
 class ShelterListAPIView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
     def get(self, request):
         shelters = Shelter.objects.all().order_by("id")
 
@@ -43,6 +46,11 @@ class ShelterListAPIView(APIView):
 
 
 class ShelterDetailAPIView(APIView):
+    permission_classes = [
+    IsAuthenticatedOrReadOnly,
+    IsAdminForShelterDelete,
+    ]
+
     def get_shelter(self, pk):
         return Shelter.objects.filter(pk=pk).first()
 
@@ -102,6 +110,8 @@ class ShelterDetailAPIView(APIView):
 
 
 class AnimalListAPIView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
     def get(self, request):
         animals = Animal.objects.all()
 
@@ -200,6 +210,8 @@ class AnimalListAPIView(APIView):
 
 
 class AnimalDetailAPIView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
     def get_animal(self, pk):
         return Animal.objects.filter(pk=pk).first()
 

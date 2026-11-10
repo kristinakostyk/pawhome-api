@@ -527,3 +527,113 @@ https://github.com/kristinakostyk/pawhome-frontend
 Ці можливості описані в початковому плані API, але ще не реалізовані в поточній версії Backend.
 
 *PawHome — допомагаємо тваринам знайти дім! 🐾*
+
+## JWT Authentication and Permissions
+
+The PawHome API uses Django REST Framework and SimpleJWT
+for user authentication and access control.
+
+### User Registration
+
+**POST** `/api/auth/register`
+
+Example request:
+
+```json
+{
+  "username": "test_user",
+  "first_name": "Test",
+  "last_name": "User",
+  "email": "test@example.com",
+  "password": "StrongPass2026!",
+  "password_confirmation": "StrongPass2026!"
+}
+```
+
+Successful registration returns **201 Created**.
+
+The API validates user input, checks password confirmation,
+uses Django password validators, and stores hashed passwords.
+
+### Login
+
+**POST** `/api/auth/login`
+
+```json
+{
+  "username": "test_user",
+  "password": "StrongPass2026!"
+}
+```
+
+Successful login returns **200 OK** with two JWT tokens:
+- `access` — valid for 15 minutes.
+- `refresh` — valid for 7 days.
+
+### Refresh Access Token
+
+**POST** `/api/auth/refresh`
+
+```json
+{
+  "refresh": "<refresh_token>"
+}
+```
+
+Returns a new access token if the refresh token is valid.
+
+### User Profile
+
+**GET** `/api/auth/me`
+
+Requires the HTTP header:
+
+`Authorization: Bearer <access_token>`
+
+Returns information about the authenticated user.
+
+### Logout
+
+**POST** `/api/auth/logout`
+
+Requires a valid access token in the Authorization header
+and a refresh token in the request body:
+
+```json
+{
+  "refresh": "<refresh_token>"
+}
+```
+
+The refresh token is added to the blacklist and cannot
+be used again to obtain new access tokens.
+
+### Permissions
+
+The API uses `IsAuthenticatedOrReadOnly`.
+
+- Guests can view animals and shelters.
+- Authenticated users can create and update animals and shelters.
+- Only staff users can delete shelters.
+- Guests cannot modify resources.
+
+### HTTP Status Codes
+
+| Status | Description |
+|--------|-------------|
+| 200 OK | Successful request |
+| 201 Created | Resource created |
+| 204 No Content | Resource deleted |
+| 400 Bad Request | Invalid request data |
+| 401 Unauthorized | Authentication required or invalid token |
+| 403 Forbidden | Insufficient permissions |
+| 404 Not Found | Resource not found |
+| 409 Conflict | Shelter cannot be deleted while it has animals |
+
+### Testing
+
+Authentication and permission endpoints were tested using Postman.
+
+The Postman collection is located at:
+
+`postman/PawHome.postman_collection.json`

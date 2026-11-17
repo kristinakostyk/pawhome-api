@@ -409,7 +409,7 @@ cd pawhome-api
 Для перевірки поточної лабораторної перейти на гілку:
 
 ```bash
-git switch feature/pawhome-crud
+git switch feature/api-testing-docs
 ```
 
 **2. Створити віртуальне середовище:**
@@ -637,3 +637,150 @@ Authentication and permission endpoints were tested using Postman.
 The Postman collection is located at:
 
 `postman/PawHome.postman_collection.json`
+
+## API Testing, Documentation and Logging
+
+### Installation
+
+The project requires Python 3.13.
+
+Create and activate a virtual environment:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+Install the project dependencies:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+### Environment Variables
+
+Copy the example environment file:
+
+```bash
+cp .env.example .env
+```
+
+Open `.env` and replace the placeholder secret key with a
+secure random Django secret key.
+
+Required environment variables:
+
+- `DJANGO_SECRET_KEY` — Django secret key.
+- `DJANGO_DEBUG` — debug mode (`True` or `False`).
+
+The `.env` file is excluded from Git and must not be committed.
+The `.env.example` file contains only example values.
+
+### Run the Project
+
+Apply database migrations:
+
+```bash
+python manage.py migrate
+```
+
+Start the development server:
+
+```bash
+python manage.py runserver
+```
+
+### Automated Tests
+
+Automated tests are implemented with pytest and pytest-django.
+
+The Shelter API is covered by 15 tests, including:
+
+- GET, POST, PATCH and DELETE operations.
+- Successful and unsuccessful requests.
+- JWT authentication and access permissions.
+- Validation errors and nonexistent resources.
+- Administrator-only shelter deletion.
+- Prevention of deleting shelters containing animals.
+
+Test data is prepared using pytest fixtures.
+
+Run all tests:
+
+```bash
+python -m pytest -v
+```
+
+Run Shelter API tests:
+
+```bash
+python -m pytest animals/test_shelters.py -v
+```
+
+### Test Coverage
+
+Test coverage is measured using pytest-cov.
+
+Run:
+
+```bash
+python -m pytest --cov=animals --cov=users --cov=config --cov-report=term-missing
+```
+
+The command displays coverage percentages and uncovered lines.
+
+### Saved Test Report
+
+The results of automated testing are saved in:
+
+[reports/test_report.txt](reports/test_report.txt)
+
+The report contains:
+- Results of all 15 automated tests.
+- The status of each test (PASSED or FAILED).
+- Code coverage percentages.
+- Information about uncovered lines.
+
+To regenerate the report, run:
+
+```bash
+mkdir -p reports
+set -o pipefail
+python -m pytest -v --color=no --cov=animals --cov=users --cov=config --cov-report=term-missing 2>&1 | tee reports/test_report.txt
+```
+
+The committed report represents the results of one test run.
+
+### OpenAPI Documentation
+
+API documentation is generated automatically using
+drf-spectacular.
+
+Swagger UI:
+
+http://127.0.0.1:8000/api/docs/
+
+OpenAPI schema:
+
+http://127.0.0.1:8000/api/schema/
+
+Start the Django development server before opening these links.
+
+The Shelter API documentation includes HTTP methods, request
+parameters, request and response structures, authentication
+requirements and HTTP status codes.
+
+### Logging
+
+The project uses Python's logging module with Django.
+
+Logging is configured in `config/settings.py`.
+
+Shelter operations are logged using appropriate levels:
+
+- INFO for successful creation, updates and deletion.
+- WARNING for invalid data, missing shelters and blocked deletion.
+
+Logs are displayed in the Django server console.
+
+Passwords, JWT tokens and other sensitive information are not logged.
